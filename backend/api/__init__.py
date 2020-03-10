@@ -3,6 +3,7 @@ import urlparse
 import StringIO
 import json
 
+from backend.movie_initializer import MovieInitializer
 from google.appengine.ext import ndb
 from google.appengine.api import urlfetch
 from protorpc.wsgi import service
@@ -245,5 +246,6 @@ def warmup(environ, start_response):
     except EmailTaken:
         # Test user already in the database. No action needed
         pass
+    MovieInitializer.execute()
     start_response('200 OK', [])
     return ['']

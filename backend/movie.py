@@ -5,10 +5,14 @@ from backend.cache import lru_cache
 from google.appengine.ext import ndb
 
 
+class DuplicateMovieError(error.Error):
+    pass
+
+
 class Movie(ndb.Model):
     title = ndb.StringProperty(indexed=False)
     year = ndb.IntegerProperty(indexed=False)
-    imdb_id = ndb.StringProperty(indexed=False)
+    imdb_id = ndb.StringProperty(indexed=True)
     type = ndb.StringProperty(indexed=False)
     poster_url = ndb.StringProperty(indexed=False)
 
@@ -18,9 +22,13 @@ class Movie(ndb.Model):
 
     @classmethod
     def create(cls, title, year, imdb_id, type, poster_url):
+        if cls.get_by_imdb_id(imdb_id) is not None:
+            raise DuplicateMovieError("IMDB id %s is already in db" % imdb_id)
+
         entity = cls(title=title, year=year, imdb_id=imdb_id, type=type, poster_url=poster_url)
         entity.put()
         cls.get.lru_set(entity, args=(cls, entity.id))
+        cls.get_by_imdb_id.lru_set(entity, args=(cls, entity.imdb_id))
         return entity
 
     @classmethod
@@ -37,3 +45,9 @@ class Movie(ndb.Model):
             raise error.NotFound("No Movie found with id: %s" % pk)
 
         return entity
+
+    @classmethod
+    @lru_cache(expires=600)
+    def get_by_imdb_id(cls, imdb_id):
+        entities = cls.query(cls.imdb_id == imdb_id).fetch(1)
+        return entities[0] if entities else None

@@ -10,7 +10,7 @@ class DuplicateMovieError(error.Error):
 
 
 class Movie(ndb.Model):
-    title = ndb.StringProperty(indexed=False)
+    title = ndb.StringProperty(indexed=True)
     year = ndb.IntegerProperty(indexed=False)
     imdb_id = ndb.StringProperty(indexed=True)
     type = ndb.StringProperty(indexed=False)
@@ -55,3 +55,9 @@ class Movie(ndb.Model):
     @classmethod
     def get_total_count(cls):
         return cls.query().count()
+
+    @classmethod
+    def get_many(cls, page_size=10, start=None):
+        start_cursor = ndb.Cursor(urlsafe=start) if start else None
+        results, cursor, more = cls.query().order(cls.title).fetch_page(page_size, start_cursor=start_cursor)
+        return results, cursor.urlsafe(), more

@@ -47,7 +47,11 @@ class Movie(ndb.Model):
         return entity
 
     @classmethod
-    @lru_cache(expires=600)
+    @lru_cache()
     def get_by_imdb_id(cls, imdb_id):
         entities = cls.query(cls.imdb_id == imdb_id).fetch(1)
         return entities[0] if entities else None
+
+    @classmethod
+    def get_total_count(cls):
+        return cls.query().count()

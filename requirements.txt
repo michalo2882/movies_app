@@ -1,2 +1,4 @@
 flake8==2.6.2
 coverage==4.5.4
+mock
+requests

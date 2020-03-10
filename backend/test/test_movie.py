@@ -17,3 +17,9 @@ class MovieTests(test.TestCase):
         self.assertRaises(movie.DuplicateMovieError,
                           lambda: movie.Movie.create(title="Dog", year=2000, imdb_id="xyz",
                                                      type="movie", poster_url="http://poster"))
+
+    def test_get_total_count(self):
+        self.policy.SetProbability(1)
+        movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        movie.Movie.create(title="Cat", year=2000, imdb_id="abc", type="movie", poster_url="http://poster")
+        self.assertEqual(2, movie.Movie.get_total_count())

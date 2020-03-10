@@ -12,6 +12,14 @@ class MovieTests(test.TestCase):
         self.assertEqual("movie", obj.type)
         self.assertEqual("http://poster", obj.poster_url)
 
+    def test_get_by_imdb_id(self):
+        obj = movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        self.assertEqual(obj, movie.Movie.get_by_imdb_id(obj.imdb_id))
+
+    def test_get_by_title(self):
+        obj = movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        self.assertEqual(obj, movie.Movie.get_by_title(obj.title))
+
     def test_create_duplicate(self):
         movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
         self.assertRaises(movie.DuplicateMovieError,

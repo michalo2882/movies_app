@@ -29,6 +29,7 @@ class Movie(ndb.Model):
         entity.put()
         cls.get.lru_set(entity, args=(cls, entity.id))
         cls.get_by_imdb_id.lru_set(entity, args=(cls, entity.imdb_id))
+        cls.get_by_title.lru_set(entity, args=(cls, entity.title))
         return entity
 
     @classmethod
@@ -50,6 +51,12 @@ class Movie(ndb.Model):
     @lru_cache()
     def get_by_imdb_id(cls, imdb_id):
         entities = cls.query(cls.imdb_id == imdb_id).fetch(1)
+        return entities[0] if entities else None
+
+    @classmethod
+    @lru_cache()
+    def get_by_title(cls, title):
+        entities = cls.query(cls.title == title).fetch(1)
         return entities[0] if entities else None
 
     @classmethod

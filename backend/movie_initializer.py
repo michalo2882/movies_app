@@ -1,11 +1,13 @@
-import requests
+import httplib2
+import json
+import re
 
 from backend import movie
 
 
 class MovieInitializer(object):
-    def __init__(self, max_movies_count=100):
-        self.max_movies_count = max_movies_count
+    def __init__(self, count=100):
+        self.count = count
         self.api_key = 'd6539b9a'
         self.search_text = 'love'
         self.year = 2019
@@ -13,17 +15,14 @@ class MovieInitializer(object):
     @classmethod
     def execute(cls):
         initializer = cls()
-        count = initializer.get_movies_to_fetch_count()
-        initializer.download_movies_data(count)
+        if not initializer.is_initialized():
+            initializer.download_movies_data()
 
-    def get_movies_to_fetch_count(self):
-        total_count = self._get_current_movies_count()
-        if total_count >= self.max_movies_count:
-            return 0
-        else:
-            return self.max_movies_count - total_count
+    def is_initialized(self):
+        return self._get_current_movies_count() > 0
 
-    def download_movies_data(self, count):
+    def download_movies_data(self):
+        count = self.count
         page = 1
         fetched_count = 0
         while fetched_count < count:
@@ -36,14 +35,25 @@ class MovieInitializer(object):
             page += 1
 
     def _fetch_movies(self, page):
-        result = requests.get("http://www.omdbapi.com/?apikey={}&s={}&y={}&page={}".format(
-            self.api_key, self.search_text, self.year, page)).json()
+        client = httplib2.Http()
+        resp, content = client.request("http://www.omdbapi.com/?apikey={}&s={}&y={}&page={}".format(
+            self.api_key, self.search_text, self.year, page), "GET")
+        result = json.loads(content)
         return result['Search'], result['totalResults']
 
     def _persist_movies(self, raw_data):
         for entry in raw_data:
-            movie.Movie.create(title=entry['Title'], year=entry['Year'], imdb_id=entry['imdbID'],
-                               type=entry['Type'], poster_url=entry['Poster'])
+            try:
+                movie.Movie.create(title=entry['Title'], year=self.fix_year(entry['Year']), imdb_id=entry['imdbID'],
+                                   type=entry['Type'], poster_url=entry['Poster'])
+            except movie.DuplicateMovieError:
+                pass
 
     def _get_current_movies_count(self):
         return movie.Movie.get_total_count()
+
+    @classmethod
+    def fix_year(cls, year_raw):
+        year_raw = year_raw.strip()
+        match = re.search(r'[0-9]+', year_raw)
+        return int(match.group()) if match else None

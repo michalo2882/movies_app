@@ -4,6 +4,7 @@ import hashlib
 import random
 import re
 
+from backend.error import NotFound
 from google.appengine.ext import ndb
 from google.appengine.api import mail
 
@@ -21,9 +22,6 @@ class CodeInvalid(error.Error):
     pass
 
 class CredentialsInvalid(error.Error):
-    pass
-
-class NotFound(error.Error):
     pass
 
 

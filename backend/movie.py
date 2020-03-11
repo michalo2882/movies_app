@@ -73,4 +73,4 @@ class Movie(ndb.Model):
     def get_many(cls, page_size=10, start=None):
         start_cursor = ndb.Cursor(urlsafe=start) if start else None
         results, cursor, more = cls.query().order(cls.title).fetch_page(page_size, start_cursor=start_cursor)
-        return results, cursor.urlsafe(), more
+        return results, cursor.urlsafe() if cursor else None, more

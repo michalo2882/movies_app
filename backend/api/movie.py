@@ -1,5 +1,6 @@
 from backend import api, movie, omdb_service
 from backend.error import NotFound
+from backend.oauth2 import oauth2
 from protorpc import remote, message_types, messages
 
 
@@ -10,6 +11,10 @@ class MovieListRequest(messages.Message):
 
 class GetMovieByTitleRequest(messages.Message):
     title = messages.StringField(1)
+
+
+class GetMovieByIdRequest(messages.Message):
+    id = messages.StringField(1)
 
 
 class MovieResponse(messages.Message):
@@ -43,3 +48,9 @@ class Movie(remote.Service):
     def create_from_omdb(self, request):
         obj = movie.Movie.create_from_omdb(request.title, omdb_service.OmdbService())
         return MovieResponse(title=obj.title)
+
+    @oauth2.required()
+    @remote.method(GetMovieByIdRequest, message_types.VoidMessage)
+    def delete_by_id(self, request):
+        movie.Movie.get(request.id).delete()
+        return message_types.VoidMessage()

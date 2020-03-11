@@ -43,3 +43,13 @@ class TestMovieApi(test.TestCase):
     def test_create_from_omdb(self):
         resp = self.api_mock.post("/api/movie.create_from_omdb", dict(title="Hulk"))
         self.assertEqual(resp.get("title"), "Hulk")
+
+    def test_delete_by_id(self):
+        self.policy.SetProbability(1)
+        obj = movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        self.assertEqual(movie.Movie.get_total_count(), 1)
+        resp = self.api_mock.post("/api/user.create", dict(email="test@gmail.com", password="test"))
+        self.assertEqual(resp.get("error"), None)
+        resp = self.api_mock.post("/api/movie.delete_by_id", dict(id=obj.id))
+        self.assertEqual(resp.get("error"), None)
+        self.assertEqual(movie.Movie.get_total_count(), 0)

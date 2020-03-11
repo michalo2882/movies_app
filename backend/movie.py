@@ -20,6 +20,9 @@ class Movie(ndb.Model):
     def id(self):
         return self.key.urlsafe()
 
+    def delete(self):
+        self.key.delete()
+
     @classmethod
     def create(cls, title, year, imdb_id, type, poster_url):
         if cls.get_by_imdb_id(imdb_id) is not None:

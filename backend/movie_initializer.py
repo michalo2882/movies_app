@@ -3,6 +3,7 @@ import json
 import re
 
 from backend import movie
+from backend.omdb_service import OmdbService
 
 
 class MovieInitializer(object):
@@ -18,7 +19,7 @@ class MovieInitializer(object):
 
     @classmethod
     def execute(cls):
-        initializer = cls()
+        initializer = cls(OmdbService())
         if not initializer.is_initialized():
             initializer.download_movies_data()
 

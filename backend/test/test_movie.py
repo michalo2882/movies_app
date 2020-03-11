@@ -1,4 +1,6 @@
 # coding: utf8
+from mock import MagicMock
+
 from backend import test, movie
 
 
@@ -25,6 +27,14 @@ class MovieTests(test.TestCase):
         self.assertRaises(movie.DuplicateMovieError,
                           lambda: movie.Movie.create(title="Dog", year=2000, imdb_id="xyz",
                                                      type="movie", poster_url="http://poster"))
+
+    def test_create_from_omdb(self):
+        title = "Dog"
+        omdb_service = MagicMock()
+        omdb_service.fetch_by_title = MagicMock(return_value=dict(title=title, year=2000, imdb_id="xyz", type="movie", poster_url="http://poster"))
+        movie.Movie.create_from_omdb(title, omdb_service)
+        omdb_service.fetch_by_title.assert_called_with(title)
+        self.assertIsNotNone(movie.Movie.get_by_title(title))
 
     def test_get_total_count(self):
         self.policy.SetProbability(1)

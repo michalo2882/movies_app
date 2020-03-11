@@ -1,7 +1,10 @@
 # coding: utf8
+import json
 
+import httplib2
 from backend import error
 from backend.cache import lru_cache
+from backend.omdb_service import OmdbService
 from google.appengine.ext import ndb
 
 
@@ -31,6 +34,12 @@ class Movie(ndb.Model):
         cls.get_by_imdb_id.lru_set(entity, args=(cls, entity.imdb_id))
         cls.get_by_title.lru_set(entity, args=(cls, entity.title))
         return entity
+
+    @classmethod
+    def create_from_omdb(cls, title, omdb_service=None):
+        if omdb_service is None:
+            omdb_service = OmdbService()
+        return cls.create(**omdb_service.fetch_by_title(title))
 
     @classmethod
     @lru_cache()

@@ -2,6 +2,11 @@ import json
 import re
 
 import httplib2
+from backend import error
+
+
+class TitleNotFoundError(error.Error):
+    pass
 
 
 class OmdbService(object):
@@ -15,6 +20,13 @@ class OmdbService(object):
             self.api_key, search_text, year, page), "GET")
         result = json.loads(content)
         return [self._transform_record(r) for r in result['Search']], result['totalResults']
+
+    def fetch_by_title(self, title):
+        resp, content = self.client.request("http://www.omdbapi.com/?apikey={}&t={}".format(self.api_key, title), "GET")
+        result = json.loads(content)
+        if not result.get('Response', False):
+            raise TitleNotFoundError('{} not found'.format(title))
+        return self._transform_record(result)
 
     @classmethod
     def _transform_record(cls, record):

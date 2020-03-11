@@ -1,7 +1,4 @@
 # coding: utf8
-import json
-
-import httplib2
 from backend import error
 from backend.cache import lru_cache
 from backend.omdb_service import OmdbService

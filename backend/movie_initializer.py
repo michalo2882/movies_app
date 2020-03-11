@@ -1,7 +1,3 @@
-import httplib2
-import json
-import re
-
 from backend import movie
 from backend.omdb_service import OmdbService
 

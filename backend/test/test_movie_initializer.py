@@ -1,7 +1,7 @@
 # coding: utf8
 from mock import MagicMock, call, ANY
 
-from backend import test, movie
+from backend import test
 from backend.movie_initializer import MovieInitializer
 
 

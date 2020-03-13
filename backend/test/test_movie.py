@@ -1,7 +1,7 @@
 # coding: utf8
 from mock import MagicMock
 
-from backend import test, movie
+from backend import test, movie, cache, error
 
 
 class MovieTests(test.TestCase):
@@ -14,12 +14,25 @@ class MovieTests(test.TestCase):
         self.assertEqual("movie", obj.type)
         self.assertEqual("http://poster", obj.poster_url)
 
-    def test_get_by_imdb_id(self):
+    def test_get_by_id(self):
+        self.policy.SetProbability(1)
         obj = movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        cache.lru_clear_all()
+        self.assertEqual(obj, movie.Movie.get(obj.id))
+
+    def test_get_by_id_not_found(self):
+        self.assertRaises(error.NotFound, lambda: movie.Movie.get('xyz'))
+
+    def test_get_by_imdb_id(self):
+        self.policy.SetProbability(1)
+        obj = movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        cache.lru_clear_all()
         self.assertEqual(obj, movie.Movie.get_by_imdb_id(obj.imdb_id))
 
     def test_get_by_title(self):
+        self.policy.SetProbability(1)
         obj = movie.Movie.create(title="Dog", year=2000, imdb_id="xyz", type="movie", poster_url="http://poster")
+        cache.lru_clear_all()
         self.assertEqual(obj, movie.Movie.get_by_title(obj.title))
 
     def test_create_duplicate(self):

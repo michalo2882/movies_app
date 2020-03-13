@@ -15,8 +15,7 @@ class OmdbService(object):
         self.client = httplib2.Http()
 
     def fetch_movies(self, page, search_text, year):
-        client = httplib2.Http()
-        resp, content = client.request("http://www.omdbapi.com/?apikey={}&s={}&y={}&page={}".format(
+        resp, content = self.client.request("http://www.omdbapi.com/?apikey={}&s={}&y={}&page={}".format(
             self.api_key, search_text, year, page), "GET")
         result = json.loads(content)
         return [self._transform_record(r) for r in result['Search']], result['totalResults']
